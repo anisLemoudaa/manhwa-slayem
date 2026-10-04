@@ -101,11 +101,11 @@ object ProComicApi : Source {
     // الفصول والصور تُحمَّل بـ JavaScript في procomic.pro، لذا نقرؤها عبر WebView مخفي (المحددات لم تُختبر).
     override fun chapters(url: String): List<Chapter> {
         val reader = "https://procomic.pro/ar/" + url.trimEnd('/').substringAfterLast('/')
-        val js = "(function(){window.scrollTo(0,document.body.scrollHeight);var m={};document.querySelectorAll('a[href*=\\"/ar/chapter/\\"]').forEach(function(a){m[a.href]=a.textContent.trim()});return JSON.stringify(Object.keys(m).map(function(k){return k+'\\t'+m[k]}))})()"
+        val js = """(function(){window.scrollTo(0,document.body.scrollHeight);var m={};document.querySelectorAll('a[href*="/ar/chapter/"]').forEach(function(a){m[a.href]=a.textContent.trim()});return JSON.stringify(Object.keys(m).map(function(k){return k+'\t'+m[k]}))})()"""
         return Web.eval(reader, js).map { Chapter(it.substringAfter('\t').ifBlank { "فصل" }, it.substringBefore('\t')) }
     }
     override fun pages(url: String): List<String> {
-        val js = "(function(){window.scrollTo(0,document.body.scrollHeight);return JSON.stringify([].slice.call(document.images).map(function(i){return i.currentSrc||i.src}).filter(function(s){return /cdn/.test(s)&&!/image_series|seo|avatar|logo/.test(s)}))})()"
+        val js = """(function(){window.scrollTo(0,document.body.scrollHeight);return JSON.stringify([].slice.call(document.images).map(function(i){return i.currentSrc||i.src}).filter(function(s){return /cdn/.test(s)&&!/image_series|seo|avatar|logo/.test(s)}))})()"""
         return Web.eval(url, js)
     }
 }
